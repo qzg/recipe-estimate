@@ -1,0 +1,704 @@
+/* CSS Reset and Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #3b82f6;
+  --secondary: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App Container */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.header .tagline {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+/* Main Content */
+.main-content {
+  padding: 20px;
+}
+
+/* Zip Code Section */
+.zip-section {
+  margin-bottom: 24px;
+}
+
+.zip-section label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.zip-section input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.zip-section input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.zip-section small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Input Tabs */
+.input-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: var(--border-light);
+  padding: 4px;
+  border-radius: var(--radius);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn:not(.active):active {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Tab Panels */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* Camera Section */
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.camera-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.camera-preview .placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px;
+}
+
+.camera-preview .placeholder svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.camera-preview .placeholder p {
+  font-size: 0.875rem;
+}
+
+.camera-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.camera-buttons .btn {
+  flex: 1;
+}
+
+/* Text Section */
+.text-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.text-section label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.text-section textarea {
+  width: 100%;
+  min-height: 280px;
+  padding: 16px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.text-section textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.text-section textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* URL Section */
+.url-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.url-section label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.url-section input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.url-section input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.url-section small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:active {
+  background: var(--primary-dark);
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--border-light);
+  color: var(--text-primary);
+}
+
+.btn-secondary:active {
+  background: var(--border);
+  transform: scale(0.98);
+}
+
+.btn-action {
+  width: 100%;
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  color: white;
+  font-size: 1rem;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.btn-action:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 1000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0 20px;
+}
+
+/* Results Section */
+.results-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-light);
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.results-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.results-header .servings {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Cost Sections */
+.cost-section {
+  background: var(--border-light);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-header h3 {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.section-header .subtotal {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-right: 8px;
+}
+
+.section-header .chevron {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.section-header.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.section-content {
+  display: none;
+  padding: 0 16px 16px;
+}
+
+.section-content.expanded {
+  display: block;
+}
+
+/* Ingredient Item */
+.ingredient-item,
+.packaging-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ingredient-item:last-child,
+.packaging-item:last-child {
+  border-bottom: none;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.item-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.item-cost {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
+/* Labor Details */
+.labor-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.875rem;
+}
+
+.labor-item .label {
+  color: var(--text-secondary);
+}
+
+.labor-item .value {
+  font-weight: 500;
+}
+
+.labor-item.total {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+/* Totals Section */
+.totals-section {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.9375rem;
+}
+
+.total-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.total-row span:last-child {
+  font-weight: 600;
+}
+
+.total-row.highlight {
+  background: var(--border-light);
+  margin: 8px -16px -8px;
+  padding: 12px 16px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.total-row.highlight span:last-child {
+  color: var(--success);
+}
+
+/* Pricing Section */
+.pricing-section {
+  margin-bottom: 20px;
+}
+
+.pricing-section h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.price-cards {
+  display: flex;
+  gap: 12px;
+}
+
+.price-card {
+  flex: 1;
+  background: var(--border-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.price-card.featured {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+}
+
+.price-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.price-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.price-card.featured .price-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Notes Section */
+.notes-section {
+  background: #fef3c7;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.notes-section h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+
+.notes-section p {
+  font-size: 0.8125rem;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+/* Error Message */
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 481px) {
+  .app-container {
+    margin: 20px auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    min-height: calc(100vh - 40px);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --surface: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --border-light: #1e293b;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a8a 100%);
+  }
+
+  .loading-overlay {
+    background: rgba(15, 23, 42, 0.95);
+  }
+
+  .notes-section {
+    background: #422006;
+  }
+
+  .notes-section h4,
+  .notes-section p {
+    color: #fcd34d;
+  }
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .btn:active {
+    opacity: 0.8;
+  }
+
+  .section-header:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .header {
+    padding-top: calc(24px + env(safe-area-inset-top));
+  }
+
+  .main-content {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}
