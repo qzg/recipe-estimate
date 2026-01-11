@@ -59,7 +59,7 @@ async function extractRecipeFromImage(imagePath) {
   const mimeType = imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-5.2',
     messages: [
       {
         role: 'user',
@@ -233,7 +233,7 @@ Important guidelines:
 6. Provide the response ONLY as valid JSON, no additional text`;
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-5.2',
     messages: [
       {
         role: 'system',
