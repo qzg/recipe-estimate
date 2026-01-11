@@ -336,12 +336,180 @@ app.post('/api/process-text', async (req, res) => {
   }
 });
 
+// ============================================
+// AI Agent Tools API
+// ============================================
+const { toolDefinitions, toolHandlers } = require('./agent-tools');
+
+// Helper function to process image from base64 for agent
+async function processImageFromBase64(base64Data, mimeType, zipCode) {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-5.2',
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: 'Please extract the complete recipe from this image. Include the recipe name, all ingredients with their quantities, and all instructions. Format it clearly with sections for ingredients and instructions.'
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${mimeType};base64,${base64Data}`
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens: 2000
+  });
+
+  const recipeText = response.choices[0].message.content;
+  return generateCostEstimate(recipeText, zipCode);
+}
+
+// Helper functions for agent tool processing
+async function agentProcessText(recipeText, zipCode) {
+  return generateCostEstimate(recipeText, zipCode);
+}
+
+async function agentProcessUrl(url, zipCode) {
+  const recipeContent = await extractRecipeFromUrl(url);
+  return generateCostEstimate(recipeContent, zipCode);
+}
+
+async function agentProcessImage(base64Data, mimeType, zipCode) {
+  return processImageFromBase64(base64Data, mimeType, zipCode);
+}
+
+// Get tool definitions (OpenAI/Claude function calling format)
+app.get('/api/agent/tools', (req, res) => {
+  res.json({
+    success: true,
+    tools: toolDefinitions,
+    description: 'Available tools for AI agents to interact with the Recipe Cost Estimator'
+  });
+});
+
+// Invoke a tool
+app.post('/api/agent/invoke', async (req, res) => {
+  try {
+    const { tool, parameters } = req.body;
+
+    if (!tool) {
+      return res.status(400).json({ error: 'Tool name is required' });
+    }
+
+    const handler = toolHandlers[tool];
+    if (!handler) {
+      return res.status(400).json({
+        error: `Unknown tool: ${tool}`,
+        availableTools: Object.keys(toolHandlers)
+      });
+    }
+
+    // Pass processing functions to estimate_costs handler
+    const processingFns = {
+      processText: agentProcessText,
+      processUrl: agentProcessUrl,
+      processImage: agentProcessImage
+    };
+
+    const result = await handler(parameters || {}, processingFns);
+    res.json(result);
+  } catch (error) {
+    console.error('Agent tool error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Batch invoke multiple tools
+app.post('/api/agent/batch', async (req, res) => {
+  try {
+    const { calls } = req.body;
+
+    if (!Array.isArray(calls)) {
+      return res.status(400).json({ error: 'calls must be an array of tool invocations' });
+    }
+
+    const processingFns = {
+      processText: agentProcessText,
+      processUrl: agentProcessUrl,
+      processImage: agentProcessImage
+    };
+
+    const results = [];
+    for (const call of calls) {
+      const { tool, parameters } = call;
+      const handler = toolHandlers[tool];
+
+      if (!handler) {
+        results.push({ tool, success: false, error: `Unknown tool: ${tool}` });
+        continue;
+      }
+
+      try {
+        const result = await handler(parameters || {}, processingFns);
+        results.push({ tool, ...result });
+      } catch (error) {
+        results.push({ tool, success: false, error: error.message });
+      }
+    }
+
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('Agent batch error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Quick estimate endpoint for agents (all-in-one)
+app.post('/api/agent/quick-estimate', async (req, res) => {
+  try {
+    const { zipCode, recipeText, recipeUrl, imageBase64, imageMimeType } = req.body;
+
+    if (!zipCode) {
+      return res.status(400).json({ error: 'zipCode is required' });
+    }
+
+    let estimate;
+
+    if (recipeText) {
+      estimate = await agentProcessText(recipeText, zipCode);
+    } else if (recipeUrl) {
+      estimate = await agentProcessUrl(recipeUrl, zipCode);
+    } else if (imageBase64) {
+      estimate = await agentProcessImage(imageBase64, imageMimeType || 'image/jpeg', zipCode);
+    } else {
+      return res.status(400).json({
+        error: 'One of recipeText, recipeUrl, or imageBase64 is required'
+      });
+    }
+
+    res.json({ success: true, estimate });
+  } catch (error) {
+    console.error('Quick estimate error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Recipe Cost Estimator running on http://localhost:${PORT}`);
-});
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Recipe Cost Estimator running on http://localhost:${PORT}`);
+  });
+}
+
+// Export for testing
+module.exports = {
+  app,
+  extractRecipeFromUrl,
+  generateCostEstimate,
+  extractRecipeFromImage
+};

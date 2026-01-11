@@ -20,13 +20,20 @@ Recipe Cost Estimator is a mobile-first web application that helps home bakers a
 ```
 recipe-estimate/
 ├── server.js           # Express backend, API routes, OpenAI integration
+├── agent-tools.js      # AI agent tool definitions and handlers
 ├── package.json        # Dependencies and scripts
+├── jest.config.js      # Test configuration
 ├── .env.example        # Environment variable template
 ├── .gitignore
 ├── README.md
 ├── CLAUDE.md           # This file
 ├── docs/
 │   └── user-flow.md    # State flow diagrams
+├── tests/
+│   ├── setup.js        # Jest setup
+│   ├── server/         # Backend API tests
+│   ├── client/         # Frontend tests
+│   └── fixtures/       # Test fixtures
 └── public/
     ├── index.html      # Mobile-first UI
     ├── styles.css      # Responsive CSS with dark mode
@@ -36,11 +43,16 @@ recipe-estimate/
 ## Key Commands
 
 ```bash
-npm install    # Install dependencies
-npm start      # Start the server on port 3000
+npm install        # Install dependencies
+npm start          # Start the server on port 3000
+npm test           # Run tests
+npm run test:watch # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
 ```
 
 ## API Endpoints
+
+### User-Facing API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -48,6 +60,57 @@ npm start      # Start the server on port 3000
 | POST | `/api/process-text` | Submit recipe text for cost estimation |
 | POST | `/api/process-url` | Fetch and process recipe from URL |
 | GET | `/api/health` | Health check endpoint |
+
+### AI Agent API
+
+The app exposes all UI capabilities as tools that AI agents can invoke programmatically.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/agent/tools` | Get tool definitions (OpenAI/Claude format) |
+| POST | `/api/agent/invoke` | Invoke a single tool |
+| POST | `/api/agent/batch` | Invoke multiple tools in sequence |
+| POST | `/api/agent/quick-estimate` | All-in-one estimation endpoint |
+
+#### Available Agent Tools
+
+| Tool | Description |
+|------|-------------|
+| `set_zip_code` | Set the user's zip code for regional pricing |
+| `set_input_method` | Switch between text, url, or image input |
+| `set_recipe_text` | Set recipe text for processing |
+| `set_recipe_url` | Set recipe URL for fetching |
+| `set_recipe_image` | Set base64-encoded recipe image |
+| `estimate_costs` | Process current input and generate estimate |
+| `get_session_state` | Get current session state |
+| `get_results` | Get the last cost estimate results |
+| `reset_session` | Clear all inputs and start fresh |
+| `list_available_tools` | List all available tools |
+
+#### Example: Invoke a Tool
+
+```bash
+curl -X POST http://localhost:3000/api/agent/invoke \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tool": "set_zip_code",
+    "parameters": {
+      "session_id": "my-session-123",
+      "zip_code": "90210"
+    }
+  }'
+```
+
+#### Example: Quick Estimate
+
+```bash
+curl -X POST http://localhost:3000/api/agent/quick-estimate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "zipCode": "90210",
+    "recipeText": "Chocolate Chip Cookies\n2 cups flour\n1 cup butter..."
+  }'
+```
 
 ## Environment Variables
 
