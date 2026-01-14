@@ -8,9 +8,10 @@ Recipe Cost Estimator is a mobile-first web application that helps home bakers a
 
 - **Backend**: Node.js with Express
 - **Frontend**: Vanilla HTML, CSS, JavaScript (mobile-first responsive design)
-- **AI Model**: OpenAI GPT-5.2 (used for image text extraction and cost estimation)
+- **AI Model**: Google Gemini 3 Flash (default) or OpenAI GPT-5.2 (configurable)
 - **Dependencies**:
-  - `openai` - OpenAI API client
+  - `@google/genai` - Google Gemini API client (new unified SDK)
+  - `openai` - OpenAI API client (optional fallback)
   - `multer` - Image upload handling
   - `axios` - HTTP requests for URL fetching
   - `cheerio` - HTML parsing for recipe extraction from URLs
@@ -19,7 +20,8 @@ Recipe Cost Estimator is a mobile-first web application that helps home bakers a
 
 ```
 recipe-estimate/
-├── server.js           # Express backend, API routes, OpenAI integration
+├── server.js           # Express backend, API routes, AI integration
+├── ai-provider.js      # AI provider abstraction (Gemini/OpenAI)
 ├── agent-tools.js      # AI agent tool definitions and handlers
 ├── package.json        # Dependencies and scripts
 ├── jest.config.js      # Test configuration
@@ -115,19 +117,56 @@ curl -X POST http://localhost:3000/api/agent/quick-estimate \
 ## Environment Variables
 
 Required in `.env`:
+```bash
+# AI Provider: 'gemini' (default) or 'openai'
+AI_PROVIDER=gemini
+
+# For Gemini (default)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# For OpenAI (optional fallback)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional
+PORT=3000
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_THINKING_LEVEL=low
+OPENAI_MODEL=gpt-5.2
 ```
-OPENAI_API_KEY=your_api_key_here
-PORT=3000  # optional, defaults to 3000
-```
 
-## OpenAI Model Configuration
+## AI Model Configuration
 
-This project uses **GPT-5.2** for all AI operations:
+This project defaults to **Google Gemini 3 Flash** (`gemini-3-flash-preview`) with OpenAI as an optional fallback. The AI provider abstraction is in `ai-provider.js`.
 
-1. **Image text extraction** (`extractRecipeFromImage` in server.js:62)
+### Gemini 3 Flash (Default)
+
+**Model ID**: `gemini-3-flash-preview`
+
+Key characteristics:
+- Pro-level intelligence at Flash speed and pricing
+- 1M input token context window, 64k output tokens
+- $0.50/M input tokens, $3.00/M output tokens
+
+**IMPORTANT - Gemini 3 Differences from Previous Versions:**
+
+1. **Thinking Level Parameter** - Gemini 3 uses `thinkingConfig.thinkingLevel` instead of the deprecated `thinking_budget`. Options are: `minimal`, `low`, `medium`, `high` (default). Do NOT use both parameters in the same request.
+
+2. **Temperature Must Stay at 1.0** - Changing the temperature below 1.0 may cause unexpected behavior like looping or degraded performance. The project keeps temperature at 1.0 for Gemini.
+
+3. **No Image Segmentation** - Native image segmentation is not supported in Gemini 3 Flash. For workloads requiring segmentation, use Gemini 2.5 Flash with thinking off.
+
+4. **New SDK** - Uses the unified `@google/genai` SDK (not the deprecated `@google/generative-ai`).
+
+### OpenAI GPT-5.2 (Fallback)
+
+If `AI_PROVIDER=openai` or Gemini API key is not set, falls back to OpenAI GPT-5.2.
+
+### AI Operations
+
+1. **Image text extraction** (`extractRecipeFromImage` in server.js:51)
    - Uses vision capabilities to read recipe images
 
-2. **Cost estimation** (`generateCostEstimate` in server.js:236)
+2. **Cost estimation** (`generateCostEstimate` in server.js:156)
    - Analyzes recipes and generates detailed cost breakdowns
    - Returns structured JSON with ingredients, packaging, labor, and pricing
 

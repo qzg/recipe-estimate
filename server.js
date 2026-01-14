@@ -3,17 +3,12 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const OpenAI = require('openai');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { generateContent, generateContentWithImage, getProviderInfo } = require('./ai-provider');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -52,38 +47,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Helper function to extract recipe from image using OpenAI Vision
+// Helper function to extract recipe from image using AI vision
 async function extractRecipeFromImage(imagePath) {
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
   const mimeType = imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-5.2',
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Please extract the complete recipe from this image. Include the recipe name, all ingredients with their quantities, and all instructions. Format it clearly with sections for ingredients and instructions.'
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:${mimeType};base64,${base64Image}`
-            }
-          }
-        ]
-      }
-    ],
-    max_tokens: 2000
+  const prompt = 'Please extract the complete recipe from this image. Include the recipe name, all ingredients with their quantities, and all instructions. Format it clearly with sections for ingredients and instructions.';
+
+  const response = await generateContentWithImage(prompt, base64Image, mimeType, {
+    maxTokens: 2000
   });
 
   // Clean up uploaded file
   fs.unlinkSync(imagePath);
 
-  return response.choices[0].message.content;
+  return response;
 }
 
 // Helper function to extract recipe from URL
@@ -174,8 +153,10 @@ async function extractRecipeFromUrl(url) {
   }
 }
 
-// Helper function to generate cost estimate using OpenAI
+// Helper function to generate cost estimate using AI
 async function generateCostEstimate(recipeText, zipCode) {
+  const systemPrompt = 'You are a professional cost estimation assistant. Always respond with valid JSON only.';
+
   const prompt = `You are a professional cost estimation assistant for home bakers and food entrepreneurs. Analyze the following recipe and provide a detailed cost estimate.
 
 RECIPE:
@@ -232,23 +213,10 @@ Important guidelines:
 5. Apply a reasonable markup (typically 40-60% for home food businesses)
 6. Provide the response ONLY as valid JSON, no additional text`;
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-5.2',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a professional cost estimation assistant. Always respond with valid JSON only.'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ],
-    max_tokens: 3000,
+  const content = await generateContent(prompt, systemPrompt, {
+    maxTokens: 3000,
     temperature: 0.3
   });
-
-  const content = response.choices[0].message.content;
 
   // Try to parse JSON from response
   try {
@@ -343,29 +311,12 @@ const { toolDefinitions, toolHandlers } = require('./agent-tools');
 
 // Helper function to process image from base64 for agent
 async function processImageFromBase64(base64Data, mimeType, zipCode) {
-  const response = await openai.chat.completions.create({
-    model: 'gpt-5.2',
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Please extract the complete recipe from this image. Include the recipe name, all ingredients with their quantities, and all instructions. Format it clearly with sections for ingredients and instructions.'
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:${mimeType};base64,${base64Data}`
-            }
-          }
-        ]
-      }
-    ],
-    max_tokens: 2000
+  const prompt = 'Please extract the complete recipe from this image. Include the recipe name, all ingredients with their quantities, and all instructions. Format it clearly with sections for ingredients and instructions.';
+
+  const recipeText = await generateContentWithImage(prompt, base64Data, mimeType, {
+    maxTokens: 2000
   });
 
-  const recipeText = response.choices[0].message.content;
   return generateCostEstimate(recipeText, zipCode);
 }
 
@@ -496,7 +447,18 @@ app.post('/api/agent/quick-estimate', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  let providerInfo = null;
+  try {
+    providerInfo = getProviderInfo();
+  } catch (e) {
+    providerInfo = { error: e.message };
+  }
+
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    aiProvider: providerInfo
+  });
 });
 
 // Start server only if not in test mode
